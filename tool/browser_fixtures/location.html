@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Ride map GPS QA fixture</title>
+  <base href="/">
+  <style>
+    .maplibregl-ctrl-bottom-left { bottom: 32px !important; }
+    .maplibregl-ctrl-attrib { font: 10px/16px sans-serif; }
+  </style>
+  <script>
+    // Test input only. Serve on a separate QA origin; never ship in web/index.html.
+    // These public museum coordinates are not the user's device location.
+    const mode = new URLSearchParams(location.search).get('mode') || 'success';
+    let nextWatch = 1;
+    const pending = new Map();
+    Object.defineProperty(navigator.geolocation, 'watchPosition', {
+      configurable: true,
+      value(success, failure) {
+        const id = nextWatch++;
+        if (mode === 'timeout') return id;
+        const timer = setTimeout(() => {
+          if (mode === 'denied' || mode === 'unavailable') {
+            failure({code: mode === 'denied' ? 1 : 2, message: 'QA fixture'});
+          } else {
+            success({timestamp: Date.now(), coords: {
+              latitude: 10.7794, longitude: 106.6921, accuracy: 18,
+              altitude: null, altitudeAccuracy: null, heading: null, speed: null
+            }});
+          }
+        }, 0);
+        pending.set(id, timer);
+        return id;
+      }
+    });
+    Object.defineProperty(navigator.geolocation, 'clearWatch', {
+      configurable: true,
+      value(id) { clearTimeout(pending.get(id)); pending.delete(id); }
+    });
+  </script>
+</head>
+<body>
+  <aside role="alert" style="position:fixed;top:0;left:0;z-index:999999;background:#fff3c4;color:#000;font:11px sans-serif;padding:5px;pointer-events:none">
+    QA — GPS dữ liệu mẫu, không phải vị trí cá nhân
+  </aside>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

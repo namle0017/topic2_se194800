@@ -1,0 +1,37 @@
+name: map_lab
+description: "PRM393 - Thực hành Map Flutter: vị trí, khoảng cách và thời gian di chuyển."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  maplibre_gl: ^0.27.1 # render bản đồ vector, marker, tuyến
+  geolocator: ^14.1.1 # vị trí thiết bị + position stream
+  http: ^1.6.0 # gọi Photon (tìm địa điểm) và OSRM (tuyến)
+  pointer_interceptor: ^0.10.1+3 # chặn chạm xuyên qua widget phủ trên map (web)
+  web: ^1.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  config:
+    enable-windows-desktop: false
+    enable-linux-desktop: false
+    enable-macos-desktop: false
+  uses-material-design: true
+  licenses:
+    - assets/fonts/OFL.txt
+    - assets/map/LICENSE.md
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf
+  assets:
+    - assets/map/

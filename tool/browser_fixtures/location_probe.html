@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kiểm tra quyền vị trí</title>
+  <style>body{font:16px system-ui;max-width:680px;margin:40px auto;padding:20px;color:#111}button{font:inherit;padding:12px 18px;margin:8px 0}pre{white-space:pre-wrap;background:#f3f3f3;padding:20px}</style>
+</head>
+<body>
+  <h1>Kiểm tra quyền vị trí</h1>
+  <p>Kiểm tra trên cùng địa chỉ với demo. Không hiển thị tọa độ và không gửi vị trí đến dịch vụ bản đồ.</p>
+  <pre id="result" role="status">Đang kiểm tra quyền…</pre>
+  <button id="read">Thử lấy vị trí thiết bị</button>
+  <script>
+    const output = document.getElementById('result');
+    let permission = 'unknown';
+    async function permissionStatus() {
+      try { permission = (await navigator.permissions.query({name:'geolocation'})).state; }
+      catch (_) { permission = 'Permissions API unavailable'; }
+      output.textContent = `Secure context: ${window.isSecureContext}\nGeolocation API: ${!!navigator.geolocation}\nPermission: ${permission}`;
+    }
+    permissionStatus();
+    document.getElementById('read').onclick = async function() {
+      await permissionStatus();
+      this.disabled = true;
+      output.textContent += '\nĐang chờ vị trí (tối đa 20 giây)…';
+      let watchId;
+      let done = false;
+      let deadline;
+      const finish = message => {
+        if (done) return;
+        done = true;
+        clearTimeout(deadline);
+        if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
+        output.textContent += '\n' + message;
+        this.disabled = false;
+      };
+      deadline = setTimeout(() => finish('Không nhận được phản hồi vị trí trong 20 giây; đã dừng yêu cầu.'),20000);
+      try {
+        watchId = navigator.geolocation.watchPosition(
+          position => finish(`Đã nhận vị trí. Sai số thiết bị báo: ${Math.ceil(position.coords.accuracy)} m. Tọa độ không được hiển thị hoặc gửi đi.`),
+          error => finish(`Geolocation error ${error.code}: ${error.message}`),
+          {enableHighAccuracy:false,timeout:8000,maximumAge:0}
+        );
+      } catch (error) { finish('Không khởi tạo được Geolocation: ' + error.message); }
+    };
+  </script>
+</body>
+</html>
